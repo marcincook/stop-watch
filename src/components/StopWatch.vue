@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 const timeElapsed = ref(0);
 const state = ref("stopped"); // stopped, running, paused
 const interval = ref(0);
@@ -48,6 +48,14 @@ function formatTime(elapsedTime) {
   const seconds = `0${elapsedTime % 60}`.slice(-2);
   return `${minutes}:${seconds}`;
 }
+
+function plus(minutes) {
+  timeElapsed.value = timeElapsed.value + minutes * 60;
+}
+
+onMounted(() => {
+  start();
+});
 </script>
 
 <template>
@@ -64,6 +72,8 @@ function formatTime(elapsedTime) {
         restart
       </button>
       <button v-if="state !== 'stopped'" @click="reset">reset</button>
+      <button @click="plus(5)">+5</button>
+      <button @click="plus(10)">+10</button>
     </div>
   </div>
 </template>

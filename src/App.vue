@@ -1,8 +1,48 @@
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import StopWatch from "./components/StopWatch.vue";
 
-const items = ref(1);
+const items = ref([
+  { id: 1, name: "Timer 1" },
+  { id: 2, name: "Timer 2" },
+  { id: 3, name: "Timer 3" },
+  { id: 4, name: "Timer 4" },
+]);
+
+const socketHost = import.meta.env.VITE_REVERB_HOST;
+onMounted(() => {
+  console.log("VITE_REVERB_HOST", socketHost);
+});
+
+// Echo.join("test")
+//   .here((users) => {
+//     usersHere = users;
+//   })
+//   .joining((user) => {
+//     usersHere.push(user);
+//   })
+//   .leaving((user) => {
+//     usersHere = usersHere.filter((u) => u.id !== user.id);
+//   });
+
+Echo.channel("test")
+  .listen("TestEvent", (event) => {
+    console.log(event);
+    items.value.map((item) => {
+      if (item.id === event.message.id) {
+        item.name = event.message.body;
+      }
+    });
+  })
+  .listen("NewTimer", (event) => {
+    console.log(event);
+    items.value.push(event);
+  });
+
+function addTimer() {
+  const id = items.value.length + 1;
+  items.value.push({ id: id, name: "Timer " + id });
+}
 </script>
 
 <template>
@@ -12,15 +52,15 @@ const items = ref(1);
         <h1>Stop Watch</h1>
         <div>Example by marcincook</div>
       </a>
-      <button @click="items++">+</button>
+      <button @click="addTimer">+</button>
     </header>
 
     <div class="modules">
       <StopWatch
-        v-for="i in items"
+        v-for="item in items"
         class="module"
-        :name="'Timer ' + i"
-        :key="i"
+        :name="item.name"
+        :key="item.id"
       />
     </div>
   </div>
@@ -49,7 +89,7 @@ header button {
   margin-inline: auto;
   padding: 1rem;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   gap: 1rem;
   background-color: rgb(255, 255, 255);
   box-shadow: 0 -5px 5px rgba(0, 0, 0, 0.03);
